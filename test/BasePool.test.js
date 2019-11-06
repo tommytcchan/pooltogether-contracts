@@ -11,8 +11,6 @@ const {
   TICKET_PRICE
 } = require('./helpers/constants')
 
-const debug = require('debug')('Pool.test.js')
-
 contract('BasePool', (accounts) => {
   let pool, token, moneyMarket
   

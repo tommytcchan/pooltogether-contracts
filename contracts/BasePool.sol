@@ -227,12 +227,13 @@ contract BasePool is Initializable, ReentrancyGuard {
    */
   function open(bytes32 _secretHash) internal {
     drawState.openNextDraw();
-    draws[drawState.openDrawIndex] = Draw(nextFeeFraction, nextFeeBeneficiary, block.number, _secretHash);
+    uint256 openDrawId = currentOpenDrawId();
+    draws[openDrawId] = Draw(getNextFeeFraction(), getNextFeeBeneficiary(), block.number, _secretHash);
     emit Opened(
-      drawState.openDrawIndex,
-      nextFeeBeneficiary,
+      openDrawId,
+      getNextFeeBeneficiary(),
       _secretHash,
-      nextFeeFraction
+      getNextFeeFraction()
     );
   }
 
@@ -266,9 +267,14 @@ contract BasePool is Initializable, ReentrancyGuard {
    * @param nextSecretHash The secret hash to use to open a new Draw
    * @param lastSecret The secret to reveal to reward the current committed Draw.
    */
-  function rewardAndOpenNextDraw(bytes32 nextSecretHash, bytes32 lastSecret, bytes32 _salt) public onlyAdmin unlessPaused {
-    require(currentCommittedDrawId() != 0, "a draw has not been committed");
-    reward(lastSecret, _salt);
+  function rewardAndOpenNextDraw(
+    bytes32 nextSecretHash,
+    bytes32 lastSecret,
+    bytes32 _salt
+  ) public onlyAdmin unlessPaused requireCommittedSecret(lastSecret, _salt) {
+    // Select the winner using the hash as entropy
+    address winningAddress = calculateWinner(lastSecret);
+    _distributeReward(lastSecret, winningAddress);
     commit();
     open(nextSecretHash);
   }
@@ -281,23 +287,14 @@ contract BasePool is Initializable, ReentrancyGuard {
    * The draw beneficiary's balance is updated with the fee.
    * The accounted balance is updated to include the fee and, if there was a winner, the net winnings.
    * Fires the Rewarded event.
-   * @param _secret The secret to reveal for the current committed Draw
    */
-  function reward(bytes32 _secret, bytes32 _salt) internal {
+  function _distributeReward(bytes32 entropy, address winningAddress) internal {
     uint256 drawId = currentCommittedDrawId();
     Draw storage draw = draws[drawId];
-
-    require(draw.secretHash == keccak256(abi.encodePacked(_secret, _salt)), "secret does not match");
 
     // Calculate the gross winnings
     uint256 underlyingBalance = balance();
     uint256 grossWinnings = underlyingBalance.sub(accountedBalance);
-
-    // derive entropy from the revealed secret and the hash of the openedBlock and gross winnings
-    bytes32 entropy = _secret ^ keccak256(abi.encodePacked(draw.openedBlock, grossWinnings));
-
-    // Select the winner using the hash as entropy
-    address winningAddress = calculateWinner(entropy);
 
     // Calculate the beneficiary fee
     uint256 fee = calculateFee(draw.feeFraction, grossWinnings);
@@ -618,6 +615,14 @@ contract BasePool is Initializable, ReentrancyGuard {
     emit AdminRemoved(_admin);
   }
 
+  function getNextFeeFraction() public view returns (uint256) {
+    return nextFeeFraction;
+  }
+
+  function getNextFeeBeneficiary() public view returns (address) {
+    return nextFeeBeneficiary;
+  }
+
   /**
    * @notice Returns the token underlying the cToken.
    * @return An ERC20 token address
@@ -646,6 +651,21 @@ contract BasePool is Initializable, ReentrancyGuard {
     emit Unpaused(msg.sender);
   }
 
+  function isPaused() public view returns (bool) {
+    return paused;
+  }
+
+  modifier requireCommittedSecret(bytes32 _secret, bytes32 _salt) {
+    require(currentCommittedDrawId() != 0, "a draw has not been committed");
+
+    uint256 drawId = currentCommittedDrawId();
+    Draw storage draw = draws[drawId];
+
+    require(draw.secretHash == keccak256(abi.encodePacked(_secret, _salt)), "secret does not match");
+
+    _;
+  }
+
   modifier onlyAdmin() {
     require(admins.has(msg.sender), "must be an admin");
     _;
@@ -657,12 +677,12 @@ contract BasePool is Initializable, ReentrancyGuard {
   }
 
   modifier whenPaused() {
-    require(paused, "contract is not paused");
+    require(isPaused(), "contract is not paused");
     _;
   }
 
   modifier unlessPaused() {
-    require(!paused, "contract is paused");
+    require(!isPaused(), "contract is paused");
     _;
   }
 }

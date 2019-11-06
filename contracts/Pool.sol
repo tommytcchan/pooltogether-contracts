@@ -55,16 +55,16 @@ contract Pool is IERC20, IERC777, BasePool {
   mapping(address => mapping(address => bool)) private _revokedDefaultOperators;
 
   // ERC20-allowances
-  mapping (address => mapping (address => uint256)) private _allowances;
+  mapping(address => mapping (address => uint256)) private _allowances;
 
   /**
     * @dev `defaultOperators` may be an empty array.
     */
   function initERC777 (
-      string calldata name,
-      string calldata symbol,
-      address[] calldata defaultOperators
-  ) external {
+      string memory name,
+      string memory symbol,
+      address[] memory defaultOperators
+  ) public {
       require(bytes(name).length != 0, "name must be defined");
       require(bytes(symbol).length != 0, "symbol must be defined");
       require(bytes(_name).length == 0, "ERC777 has already been initialized");

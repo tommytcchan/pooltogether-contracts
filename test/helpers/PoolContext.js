@@ -1,5 +1,6 @@
 const BN = require('bn.js')
 const {
+  ZERO_ADDRESS,
   SALT,
   SECRET,
   SECRET_HASH,
@@ -11,31 +12,37 @@ const debug = require('debug')('PoolContext.js')
 
 module.exports = function PoolContext({ web3, artifacts, accounts }) {
 
-  let pool, token, moneyMarket, sumTree, drawManager, registry
+  let pool, familyPool, token, moneyMarket, sumTree, drawManager, registry
   
   const [owner, admin, user1, user2] = accounts
 
-  const Token = artifacts.require('Token.sol')
-  const Pool = artifacts.require('Pool.sol')
-  const CErc20Mock = artifacts.require('CErc20Mock.sol')
-  const FixidityLib = artifacts.require('FixidityLib.sol')
-  const SortitionSumTreeFactory = artifacts.require('SortitionSumTreeFactory.sol')
-  const DrawManager = artifacts.require('DrawManager.sol')
-
   let Rewarded, Committed
 
-  this.init = async () => {
+  this.init = async ({
+    name,
+    symbol
+  } = {
+    name: 'Token',
+    symbol: 'TOK'
+  }) => {
     registry = await setupERC1820({ web3, artifacts, account: owner })
 
+    const SortitionSumTreeFactory = artifacts.require('SortitionSumTreeFactory.sol')
     sumTree = await SortitionSumTreeFactory.new()
+
+    const DrawManager = artifacts.require('DrawManager.sol')
     await DrawManager.link("SortitionSumTreeFactory", sumTree.address)
     drawManager = await DrawManager.new()
-    await Pool.link('DrawManager', drawManager.address)
+
+    const FixidityLib = artifacts.require('FixidityLib.sol')    
     fixidity = await FixidityLib.new({ from: admin })
 
+    const Token = artifacts.require('Token.sol')
     token = await Token.new({ from: admin })
     await token.initialize(owner)
+    await token.setNameAndSymbol(name, symbol)
 
+    const CErc20Mock = artifacts.require('CErc20Mock.sol')
     moneyMarket = await CErc20Mock.new({ from: admin })
     await moneyMarket.initialize(token.address, new BN(SUPPLY_RATE_PER_BLOCK))
 
@@ -69,25 +76,31 @@ module.exports = function PoolContext({ web3, artifacts, accounts }) {
   }
 
   this.createPool = async (feeFraction = new BN('0')) => {
-    await Pool.link("DrawManager", drawManager.address)
-    await Pool.link("FixidityLib", fixidity.address)
+    // const Pool = artifacts.require('Pool.sol')
+    // await Pool.link("DrawManager", drawManager.address)
+    // await Pool.link("FixidityLib", fixidity.address)
 
-    pool = await Pool.new()
-    await pool.init(
-      owner,
-      moneyMarket.address,
-      feeFraction,
-      owner
-    )
+    // pool = await Pool.new()
+    // await pool.init(
+    //   owner,
+    //   moneyMarket.address,
+    //   feeFraction,
+    //   owner
+    // )
 
-    await pool.initERC777('Prize Dai', 'pzDAI', [])
+    // await pool.initERC777('Prize Dai', 'pzDAI', [])
 
+    // await this.openNextDraw()
+
+    // return pool
+
+    pool = await this.createFamilyPool({ feeFraction })
     await this.openNextDraw()
-
     return pool
   }
 
   this.createPoolNoInit = async (feeFraction = new BN('0')) => {
+    const Pool = artifacts.require('Pool.sol')
     await Pool.link("DrawManager", drawManager.address)
     await Pool.link("FixidityLib", fixidity.address)
 
@@ -100,6 +113,32 @@ module.exports = function PoolContext({ web3, artifacts, accounts }) {
     )
 
     return pool
+  }
+
+  this.createFamilyPool = async ({
+    feeFraction,
+    name,
+    symbol,
+    defaultOperators,
+    parent
+  }) => {
+    const FamilyPool = artifacts.require('FamilyPool.sol')
+    await FamilyPool.link("DrawManager", drawManager.address)
+    await FamilyPool.link("FixidityLib", fixidity.address)
+
+    familyPool = await FamilyPool.new()
+    await familyPool.init(
+      owner,
+      moneyMarket.address,
+      feeFraction || new BN('0'),
+      owner,
+      name || 'Prize Token',
+      symbol || 'pzTok',
+      defaultOperators || [],
+      parent || ZERO_ADDRESS
+    )
+
+    return familyPool
   }
 
   this.rewardAndOpenNextDraw = async (options) => {
