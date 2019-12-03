@@ -239,10 +239,31 @@ contract('ERC777Pool', (accounts) => {
     })
 
     describe('transfer()', () => {
+      it('should do nothing if we transfer 0', async () => {
+        await poolContext.depositPool(toWei('10'))
+        assert.equal(await pool.totalBalanceOf(owner), toWei('10'))
+        await pool.transfer(user2, toWei('10'))
+        assert.equal(await pool.totalBalanceOf(owner), toWei('10'))
+        assert.equal(await pool.balanceOf(owner), toWei('10'))
+        assert.equal(await pool.balanceOf(user2), toWei('0'))
+      })
+
+      it('should do nothing if we transfer 0', async () => {
+        await poolContext.depositPool(toWei('10'))
+        await poolContext.nextDraw()
+        assert.equal(await pool.balanceOf(owner), toWei('10'))
+        await pool.transfer(user2, toWei('0'))
+        assert.equal(await pool.totalBalanceOf(owner), toWei('10'))
+        assert.equal(await pool.balanceOf(owner), toWei('10'))
+        assert.equal(await pool.balanceOf(user2), toWei('0'))
+      })
+
       it('should transfer tokens to another user', async () => {
         await poolContext.depositPool(toWei('10'))
         await poolContext.nextDraw()
+        assert.equal(await pool.balanceOf(owner), toWei('10'))
         await pool.transfer(user2, toWei('10'))
+        assert.equal(await pool.totalBalanceOf(owner), toWei('0'))
         assert.equal(await pool.balanceOf(owner), toWei('0'))
         assert.equal(await pool.balanceOf(user2), toWei('10'))
       })
