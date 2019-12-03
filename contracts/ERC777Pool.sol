@@ -503,6 +503,7 @@ contract ERC777Pool is IERC20, IERC777, BasePool {
     * @param amount uint256 amount of tokens to transfer
     * @param userData bytes extra information provided by the token holder (if any)
     * @param operatorData bytes extra information provided by the operator (if any)
+    * @param requireReceptionAck Whether the recipient, when a contract, *must* have a IERC777Recipient implementor
     */
   function _callTokensReceived(
       address operator,

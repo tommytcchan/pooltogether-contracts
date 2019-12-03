@@ -74,7 +74,7 @@ contract MCDAwarePool is RecipientWhitelistERC777Pool, IERC777Recipient {
   }
 
   /**
-   * @notice Used to initialze the BasePool contract after an upgrade.
+   * @notice Used to initialize the BasePool contract after an upgrade.
    * @param name Name of the token
    * @param symbol Symbol of the token
    * @param defaultOperators The initial set of operators for all users
