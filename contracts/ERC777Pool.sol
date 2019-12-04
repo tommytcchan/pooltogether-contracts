@@ -19,11 +19,11 @@ along with PoolTogether.  If not, see <https://www.gnu.org/licenses/>.
 pragma solidity 0.5.12;
 
 import "./BasePool.sol";
-import "@openzeppelin/contracts/contracts/token/ERC777/IERC777.sol";
-import "@openzeppelin/contracts/contracts/token/ERC777/IERC777Recipient.sol";
-import "@openzeppelin/contracts/contracts/token/ERC777/IERC777Sender.sol";
-import "@openzeppelin/contracts/contracts/introspection/IERC1820Registry.sol";
-import "@openzeppelin/contracts/contracts/utils/Address.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC777/IERC777.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC777/IERC777Recipient.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/token/ERC777/IERC777Sender.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/introspection/IERC1820Registry.sol";
+import "@openzeppelin/contracts-ethereum-package/contracts/utils/Address.sol";
 
 /**
  * @dev Implementation of the {IERC777} interface.
