@@ -134,4 +134,3 @@ Set the environment variables SECRET_SEED, SALT_SEED, LOCALHOST_URL, GANACHE_FOR
 
 `yarn fork reward`
 
-
