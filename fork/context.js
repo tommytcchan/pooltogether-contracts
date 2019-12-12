@@ -1,14 +1,16 @@
 const { buildContext } = require('oz-console')
-// const { traceProvider } = require('./traceProvider')
-// const { ethers } = require('ethers')
+const { ethers } = require('ethers')
 
-async function context(verbose = false, mainnet = false) {
-  // const provider = new ethers.providers.Web3Provider(traceProvider({ rpcUrl: process.env.LOCALHOST_URL }))
+async function context(verbose = false, mainnet = false, providerEngine = null) {
 
   let args = {
     projectConfig: '.openzeppelin/project.json',
     directory: 'build/contracts',
     verbose
+  }
+
+  if (providerEngine) {
+    args.provider = new ethers.providers.Web3Provider(providerEngine)
   }
 
   if (mainnet) {
