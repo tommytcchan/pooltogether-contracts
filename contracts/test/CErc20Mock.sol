@@ -16,7 +16,7 @@ You should have received a copy of the GNU General Public License
 along with PoolTogether.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-pragma solidity 0.5.10;
+pragma solidity 0.5.12;
 
 import "../compound/ICErc20.sol";
 import "@openzeppelin/upgrades/contracts/Initializable.sol";
@@ -44,7 +44,7 @@ contract CErc20Mock is Initializable, ICErc20 {
   }
 
   function redeemUnderlying(uint requestedAmount) external returns (uint) {
-    require(ownerTokenAmounts[msg.sender] > 0, "you must have supplied tokens");
+    require(requestedAmount <= ownerTokenAmounts[msg.sender], "insufficient underlying funds");
     ownerTokenAmounts[msg.sender] = ownerTokenAmounts[msg.sender] - requestedAmount;
     require(IERC20(underlying).transfer(msg.sender, requestedAmount), "could not transfer tokens");
   }

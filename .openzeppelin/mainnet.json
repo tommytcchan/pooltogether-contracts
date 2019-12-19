@@ -1,6 +1,6 @@
 {
   "contracts": {
-    "Pool": {
+    "PoolSai": {
       "address": "0x22DF31Ffdaa436bDCCb136c0f127634895893b60",
       "constructorCode": "608060405234801561001057600080fd5b50613c00806100206000396000f3fe",
       "bodyBytecodeHash": "81899a785afd89b760202883c4084fe7d09e3fcd2edd0a2999445630feb9a512",
@@ -349,7 +349,7 @@
     }
   },
   "proxies": {
-    "pooltogether/Pool": [
+    "pooltogether/PoolSai": [
       {
         "address": "0xB3867CAE8944152A586a2035C5E313d11A587390",
         "version": "0.2",

@@ -1,21 +1,24 @@
 {
   "manifestVersion": "2.2",
   "contracts": {
-    "Pool": "Pool"
+    "PoolSaiToken": "PoolToken",
+    "PoolDaiToken": "PoolToken",
+    "PoolSai": "MCDAwarePool",
+    "PoolDai": "MCDAwarePool"
   },
   "dependencies": {},
   "name": "pooltogether",
   "version": "0.2",
   "compiler": {
     "manager": "openzeppelin",
-    "evmVersion": "constantinople",
     "compilerSettings": {
       "optimizer": {
-        "enabled": false,
+        "enabled": true,
         "runs": "200"
-      }
+      },
+      "evmVersion": "constantinople"
     },
-    "solcVersion": "0.5.10"
+    "solcVersion": "0.5.12"
   },
-  "telemetryOptIn": true
+  "telemetryOptIn": false
 }
