@@ -35,7 +35,7 @@ async function migrate(context, ozNetworkName, ozOptions = '') {
 
   runShell(`oz session ${ozOptions} --network ${ozNetworkName} --from ${process.env.ADMIN_ADDRESS} --expires 3600 --timeout 600`)
 
-  runShell(`oz push`)
+  runShell(`oz push --force`)
 
   let {
     walletAtIndex,
@@ -53,14 +53,15 @@ async function migrate(context, ozNetworkName, ozOptions = '') {
   await migration.migrate(10, async () => {
     runShell(`oz create PoolSai --init init --args ${ownerWallet.address},${cSai},${feeFraction},${ownerWallet.address},${lockDuration},${cooldownDuration}`)
     context.reload()
-    skip20 = true
+    // skip20 = true
   })
 
-  if (!skip20) {
-    await migration.migrate(20, () => {
-      throw new Error('Pool must be manually upgraded using the Multisig.')
-    })
-  }
+  // if (!skip20) {
+  await migration.migrate(20, () => {
+    // throw new Error('Pool must be manually upgraded using the Multisig.')
+    runShell(`oz upgrade PoolSai --init initMCDAwarePool --args 40,80`)
+  })
+  // }
 
   await migration.migrate(30, async () => {
     runShell(`oz create PoolSaiToken ${ozOptions} --network ${ozNetworkName} --init init --args '"Pool Sai","poolSai",[],${context.contracts.PoolSai.address}'`)
