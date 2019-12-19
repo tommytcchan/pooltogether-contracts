@@ -1,8 +1,7 @@
 {
   "manifestVersion": "2.2",
   "contracts": {
-    "Pool": "Pool",
-    "Migrations": "Migrations"
+    "Pool": "Pool"
   },
   "dependencies": {},
   "name": "pooltogether",
@@ -11,8 +10,12 @@
     "manager": "openzeppelin",
     "evmVersion": "constantinople",
     "compilerSettings": {
-      "optimizer": {}
+      "optimizer": {
+        "enabled": false,
+        "runs": "200"
+      }
     },
     "solcVersion": "0.5.10"
-  }
+  },
+  "telemetryOptIn": true
 }
